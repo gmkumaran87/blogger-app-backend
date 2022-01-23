@@ -1,99 +1,128 @@
-import {
+const User = require("../models/User");
+const {
     AccountExistsError,
     BadRequestError,
     UnauthenticatedError,
-} from "../errors/index.js";
-import { StatusCodes } from "http-status-codes";
-import { ObjectId } from "mongodb";
-import sendGridMail from "../utility/sendMail.js";
-import {
+} = require("../errors/index");
+const { StatusCodes } = require("http-status-codes");
+
+const sendGridMail = require("../utility/sendMail");
+const { jsonToken, isTokenValid } = require("../utility/helper");
+
+/*const {
     connectDB,
     hashPassword,
     randomStringGenerator,
     jsonToken,
     comparePassword,
-} from "../utility/helper.js";
+} =
+from "../utility/helper.js";*/
 // import { compareSync } from "bcryptjs";
 
 const registerUser = async(req, res) => {
-    const { firstName, lastName, email, password } = req.body;
+    const { username, email, password } = req.body;
 
-    // DB Connection and insertion
-    const db = await connectDB();
-    // Finding the User present in the DB
-    const userExists = await db.collection("users").findOne({ email: email });
+    console.log(req.body);
 
-    if (userExists) {
-        throw new AccountExistsError("Email already exists");
+    const emailExists = await User.findOne({ email });
+
+    if (emailExists) {
+        throw new BadRequestError("Email already Exists");
     }
 
-    // Hashing the Password
-    const hashedPassword = await hashPassword(password);
+    const user = await User.create(req.body);
+    console.log(user);
 
-    // Creating Confirmation token
-    const confirmationToken = jsonToken(
-        email,
-        Math.floor(Math.random() * 100) + 1
-    );
-
-    console.log("token", confirmationToken);
-
-    const userObj = {
-        firstName,
-        lastName,
-        email,
-        password: hashedPassword,
-        isActive: false,
-        confirmationCode: confirmationToken,
+    const jsonUserDetails = {
+        username: user.username,
+        email: user.email,
+        userId: user._id,
     };
 
-    // Inserting into the DB with user details
-    const user = await db.collection("users").insertOne(userObj);
+    const token = jsonToken(jsonUserDetails);
 
-    // Account Activation link
-    const activationLink = `${process.env.ACCOUNT_ACTIVATION_URL}/${confirmationToken}`;
+    const oneDay = 1000 * 60 * 60 * 24; // One day in milli seconds
+    // Sending the Cookies
+    res.cookie("token", token, {
+        expires: new Date(Date.now() + oneDay),
+        httpOnly: true,
+    });
+    /*
+                          // Finding the User present in the DB
+                          const userExists = await db.collection("users").findOne({ email: email });
 
-    // Sending email
-    const mailInfo = sendGridMail(
-        req.body.email,
-        activationLink,
-        "activating your account"
-    );
+                          if (userExists) {
+                              throw new AccountExistsError("Email already exists");
+                          }
+
+                          // Hashing the Password
+                          const hashedPassword = await hashPassword(password);
+
+                          // Creating Confirmation token
+                          const confirmationToken = jsonToken(
+                              email,
+                              Math.floor(Math.random() * 100) + 1
+                          );
+
+                          console.log("token", confirmationToken);
+
+                          const userObj = {
+                              firstName,
+                              lastName,
+                              email,
+                              password: hashedPassword,
+                              isActive: false,
+                              confirmationCode: confirmationToken,
+                          };
+
+                          // Inserting into the DB with user details
+                          const user = await db.collection("users").insertOne(userObj);
+
+                          // Account Activation link
+                          const activationLink = `${process.env.ACCOUNT_ACTIVATION_URL}/${confirmationToken}`;
+
+                          // Sending email
+                          const mailInfo = sendGridMail(
+                              req.body.email,
+                              activationLink,
+                              "activating your account"
+                          );*/
 
     res
         .status(StatusCodes.CREATED)
         .json({ msg: "Registered the User, Please login", user });
 };
 
-const loginUser = async(req, res) => {
-    const { email, password } = req.body;
+const loginUser = (req, res) => {
+    res.send("Login user");
+    /*const { email, password } = req.body;
 
-    if (!email || !password) {
-        throw new BadRequestError("Please provide email and passowrd");
-    }
-    // DB Connection and insertion
-    const db = await connectDB();
-    const user = await db.collection("users").findOne({ email: req.body.email });
+                              if (!email || !password) {
+                                  throw new BadRequestError("Please provide email and passowrd");
+                              }
+                              // DB Connection and insertion
+                              const db = await connectDB();
+                              const user = await db.collection("users").findOne({ email: req.body.email });
 
-    if (!user) {
-        throw new UnauthenticatedError("Invalid Credentials");
-    }
+                              if (!user) {
+                                  throw new UnauthenticatedError("Invalid Credentials");
+                              }
 
-    const isCorrect = await comparePassword(password, user.password);
-    console.log(isCorrect);
-    if (!isCorrect) {
-        throw new UnauthenticatedError("Invalid Credentials");
-    }
+                              const isCorrect = await comparePassword(password, user.password);
+                              console.log(isCorrect);
+                              if (!isCorrect) {
+                                  throw new UnauthenticatedError("Invalid Credentials");
+                              }
 
-    const token = jsonToken(email, user._id);
+                              const token = jsonToken(email, user._id);
 
-    console.log("Token generated", token);
-    res.status(StatusCodes.CREATED).json({
-        msg: "User Logged in successfully...",
-        userName: user.firstName,
-        userId: user._id,
-        token,
-    });
+                              console.log("Token generated", token);
+                              res.status(StatusCodes.CREATED).json({
+                                  msg: "User Logged in successfully...",
+                                  userName: user.firstName,
+                                  userId: user._id,
+                                  token,
+                              });*/
 };
 const forgotPassword = async(req, res) => {
     // DB Connection and insertion
@@ -191,7 +220,7 @@ const accountActivation = async(req, res) => {
             .json({ msg: "Activation link is not valid" });
     }
 };
-export {
+module.exports = {
     registerUser,
     forgotPassword,
     emailValidation,

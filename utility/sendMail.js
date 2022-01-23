@@ -1,4 +1,4 @@
-import sgMail from "@sendgrid/mail";
+const sgMail = require("@sendgrid/mail");
 
 // const { setApiKey, send } = sgMail;
 const sendGridMail = async(email, link, customMessage) => {
@@ -23,4 +23,4 @@ const sendGridMail = async(email, link, customMessage) => {
     }
 };
 
-export default sendGridMail;
+module.exports = sendGridMail;

@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "description": "Blogger App",
     "main": "index.js",
+    "type": "commonjs",
     "scripts": {
         "start": "node index.js",
         "dev": "nodemon index.js",
@@ -19,6 +20,9 @@
     },
     "homepage": "https://github.com/gmkumaran87/blogger-app-backend#readme",
     "dependencies": {
+        "@sendgrid/mail": "^7.6.0",
+        "bcryptjs": "^2.4.3",
+        "cookie-parser": "^1.4.6",
         "cors": "^2.8.5",
         "dotenv": "^12.0.4",
         "express": "^4.17.2",
@@ -26,8 +30,12 @@
         "google-auth-library": "^7.11.0",
         "helmet": "^5.0.1",
         "http-status-codes": "^2.2.0",
+        "jsonwebtoken": "^8.5.1",
         "mongodb": "^4.3.0",
+        "mongoose": "^6.1.7",
+        "morgan": "^1.10.0",
         "nodemon": "^2.0.15",
+        "validator": "^13.7.0",
         "xss-clean": "^0.1.1"
     }
 }

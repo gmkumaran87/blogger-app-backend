@@ -1,5 +1,5 @@
-import CustomApiError from "./custom-api.js";
-import { StatusCodes } from "http-status-codes";
+const { StatusCodes } = require("http-status-codes");
+const CustomApiError = require("./custom-api");
 
 class AccountExistsError extends CustomApiError {
     constructor(message) {
@@ -8,4 +8,4 @@ class AccountExistsError extends CustomApiError {
     }
 }
 
-export default AccountExistsError;
+module.exports = AccountExistsError;

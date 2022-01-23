@@ -1,10 +1,10 @@
-import CustomApiError from "./custom-api.js";
-import BadRequestError from "./bad-request.js";
-import NotFoundError from "./not-found.js";
-import UnauthenticatedError from "./unauthenticated.js";
-import AccountExistsError from "./already-exists.js";
+const AccountExistsError = require("./already-exists");
+const CustomApiError = require("./custom-api");
+const UnauthenticatedError = require("./unauthenticated");
+const NotFoundError = require("./not-found");
+const BadRequestError = require("./bad-request");
 
-export {
+module.exports = {
     CustomApiError,
     UnauthenticatedError,
     NotFoundError,

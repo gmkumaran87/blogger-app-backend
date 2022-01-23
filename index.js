@@ -1,39 +1,58 @@
-import express, { json } from "express";
-import dotenv from "dotenv";
+const express = require("express");
+require("dotenv").config();
 // import { er } from "express-async-errors";
-import "express-async-errors";
+require("express-async-errors");
 
-dotenv.config();
+const connectDB = require("./db/connect");
 // Security Libraries
-import cors from "cors";
-import helmet from "helmet";
-import xss from "xss-clean";
+const cors = require("cors");
+const helmet = require("helmet");
+const xss = require("xss-clean");
+const cookieParser = require("cookie-parser");
+// const rateLimiter = require("express-rate-limit");
 
+const morgan = require("morgan");
 const app = express();
 
 // Routers
-import authrouter from "./routers/auth.js";
-import urlRouter from "./routers/url.js";
-import tinyUrl from "./routers/tinyUrl.js";
+const authrouter = require("./routers/auth");
 
-// Error handler
-import errorHandlerMiddleware from "./middleware/error-handler.js";
-import authentication from "./middleware/authentication.js";
+// error handler
+const notFoundMiddleware = require("./middleware/not-found");
+const errorHandlerMiddleware = require("./middleware/error-handler");
 
-app.use(json());
+app.use(morgan("tiny"));
+app.use(express.json());
 app.use(helmet());
 app.use(cors());
 app.use(xss());
+app.use(cookieParser());
 
 app.use("/api/v1/auth", authrouter);
-app.use("/api/v1/shorturl", tinyUrl);
-app.use("/api/v1/url", authentication, urlRouter);
+// app.use("/api/v1/url", authentication, urlRouter);
 
 app.get("/", (req, res) => {
-    res.send("Welcome to the URL Shortener app home page");
+    console.log(req.cookies);
+    res.send("Welcome to the Blogger App home page");
 });
 
+app.use(notFoundMiddleware);
 app.use(errorHandlerMiddleware);
 
+app.get("*", (req, res) => {
+    console.log(req.url);
+    res.status(404).send("Page not found...!");
+});
+
 const port = process.env.PORT;
-app.listen(port, () => console.log("App started in the port -", port));
+
+const start = async() => {
+    try {
+        const db = await connectDB();
+        app.listen(port, () => console.log("App started in the port -", port));
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+start();
