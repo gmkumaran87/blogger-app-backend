@@ -1,25 +1,24 @@
-import Jwt from "jsonwebtoken";
-import { UnauthenticatedError } from "../errors/index.js";
-
-const { verify } = Jwt;
+const { UnauthenticatedError } = require("../errors/index");
+const { isTokenValid } = require("../utility/helper");
 
 const authentication = async(req, res, next) => {
-    const header = req.headers.authorization;
+    // const header = req.headers.authorization;
 
-    if (!header || header.split(" ")[0] != "Bearer") {
+    const token = req.signedCookies.token;
+
+    if (!token) {
         throw new UnauthenticatedError("Invalid Authentication");
     }
 
-    const token = header.split(" ")[1];
-
     try {
-        const tokenValid = verify(token, process.env.JWT_SECRET);
+        const tokenValid = isTokenValid(token);
+
         console.log("Token processed", tokenValid);
-        req.user = { userId: tokenValid.id, email: tokenValid.email };
+        req.user = { userId: tokenValid.userId, email: tokenValid.email };
         next();
     } catch (error) {
         throw new UnauthenticatedError("Invalid Authentication");
     }
 };
 
-export default authentication;
+module.exports = authentication;

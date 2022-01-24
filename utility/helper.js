@@ -19,10 +19,26 @@ const jsonToken = (payload) => {
     return token;
 };
 
-const isTokenValid = ({ token }) => jwt.verify(token, process.env.JWT_SECRET);
+const isTokenValid = (token) => jwt.verify(token, process.env.JWT_SECRET);
 
+const attachCookiesToResponse = (res, payload) => {
+    const token = jsonToken(payload);
+
+    const oneDay = 1000 * 60 * 60 * 24; // One day in milli seconds
+
+    // Sending the Cookies
+    res.cookie("token", token, {
+        expires: new Date(Date.now() + oneDay),
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        signed: true,
+    });
+
+    // res.status(200).json({ user: payload.jsonUserDetails, token });
+};
 module.exports = {
     // randomStringGenerator,
     jsonToken,
     isTokenValid,
+    attachCookiesToResponse,
 };

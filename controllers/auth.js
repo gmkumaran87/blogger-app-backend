@@ -7,7 +7,7 @@ const {
 const { StatusCodes } = require("http-status-codes");
 
 const sendGridMail = require("../utility/sendMail");
-const { jsonToken, isTokenValid } = require("../utility/helper");
+const { attachCookiesToResponse, jsonToken } = require("../utility/helper");
 
 /*const {
     connectDB,
@@ -22,13 +22,20 @@ from "../utility/helper.js";*/
 const registerUser = async(req, res) => {
     const { username, email, password } = req.body;
 
-    console.log(req.body);
-
     const emailExists = await User.findOne({ email });
 
     if (emailExists) {
         throw new BadRequestError("Email already Exists");
     }
+
+    // Creating Confirmation token
+    const confirmationToken = jsonToken({
+        email,
+        randomId: Math.floor(Math.random() * 100) + 1,
+    });
+
+    req.body.confirmationCode = confirmationToken;
+    req.body.isActive = false;
 
     const user = await User.create(req.body);
     console.log(user);
@@ -39,90 +46,71 @@ const registerUser = async(req, res) => {
         userId: user._id,
     };
 
-    const token = jsonToken(jsonUserDetails);
+    attachCookiesToResponse(res, jsonUserDetails);
 
-    const oneDay = 1000 * 60 * 60 * 24; // One day in milli seconds
-    // Sending the Cookies
-    res.cookie("token", token, {
-        expires: new Date(Date.now() + oneDay),
-        httpOnly: true,
-    });
-    /*
-                          // Finding the User present in the DB
-                          const userExists = await db.collection("users").findOne({ email: email });
+    // Account Activation link
+    const activationLink = `${process.env.ACCOUNT_ACTIVATION_URL}/${confirmationToken}`;
 
-                          if (userExists) {
-                              throw new AccountExistsError("Email already exists");
-                          }
-
-                          // Hashing the Password
-                          const hashedPassword = await hashPassword(password);
-
-                          // Creating Confirmation token
-                          const confirmationToken = jsonToken(
-                              email,
-                              Math.floor(Math.random() * 100) + 1
-                          );
-
-                          console.log("token", confirmationToken);
-
-                          const userObj = {
-                              firstName,
-                              lastName,
-                              email,
-                              password: hashedPassword,
-                              isActive: false,
-                              confirmationCode: confirmationToken,
-                          };
-
-                          // Inserting into the DB with user details
-                          const user = await db.collection("users").insertOne(userObj);
-
-                          // Account Activation link
-                          const activationLink = `${process.env.ACCOUNT_ACTIVATION_URL}/${confirmationToken}`;
-
-                          // Sending email
-                          const mailInfo = sendGridMail(
-                              req.body.email,
-                              activationLink,
-                              "activating your account"
-                          );*/
+    // Sending email
+    const mailInfo = sendGridMail(
+        req.body.email,
+        activationLink,
+        "activating your account"
+    );
 
     res
         .status(StatusCodes.CREATED)
         .json({ msg: "Registered the User, Please login", user });
 };
 
-const loginUser = (req, res) => {
-    res.send("Login user");
-    /*const { email, password } = req.body;
+const loginUser = async(req, res) => {
+    const { email, password } = req.body;
 
-                              if (!email || !password) {
-                                  throw new BadRequestError("Please provide email and passowrd");
-                              }
-                              // DB Connection and insertion
-                              const db = await connectDB();
-                              const user = await db.collection("users").findOne({ email: req.body.email });
+    if (!email || !password) {
+        throw new BadRequestError("Please provide email and passowrd");
+    }
 
-                              if (!user) {
-                                  throw new UnauthenticatedError("Invalid Credentials");
-                              }
+    const user = await User.findOne({ email });
 
-                              const isCorrect = await comparePassword(password, user.password);
-                              console.log(isCorrect);
-                              if (!isCorrect) {
-                                  throw new UnauthenticatedError("Invalid Credentials");
-                              }
+    // DB Connection and insertion
+    if (!user) {
+        throw new UnauthenticatedError("Invalid Credentials");
+    }
 
-                              const token = jsonToken(email, user._id);
+    console.log("Email and Password", user, email, password);
 
-                              console.log("Token generated", token);
-                              res.status(StatusCodes.CREATED).json({
-                                  msg: "User Logged in successfully...",
-                                  userName: user.firstName,
-                                  userId: user._id,
-                                  token,
-                              });*/
+    const isPasswordCorrect = await user.comparePassword(password);
+
+    console.log("After Password", isPasswordCorrect);
+    if (!isPasswordCorrect) {
+        throw new UnauthenticatedError("Invalid Credentials");
+    }
+
+    console.log("After Password Validation");
+    const jsonUserDetails = {
+        username: user.username,
+        email: user.email,
+        userId: user._id,
+    };
+
+    console.log("Json User", jsonUserDetails);
+
+    attachCookiesToResponse(res, jsonUserDetails);
+
+    console.log("Before status");
+    res.status(StatusCodes.CREATED).json({
+        msg: "User Logged in successfully...",
+        user,
+    });
+};
+
+const logout = (req, res) => {
+    res.cookie("token", "logout", {
+        httpOnly: true,
+        expires: new Date(Date.now()),
+    });
+
+    res.status(StatusCodes.OK).json({ msg: "User logged out successfully" });
 };
 const forgotPassword = async(req, res) => {
     // DB Connection and insertion
@@ -220,11 +208,18 @@ const accountActivation = async(req, res) => {
             .json({ msg: "Activation link is not valid" });
     }
 };
+
+const getUser = (req, res) => {
+    res.send("Users list");
+    console.log(req.user);
+};
 module.exports = {
     registerUser,
     forgotPassword,
     emailValidation,
     loginUser,
+    logout,
     updatePassword,
     accountActivation,
+    getUser,
 };

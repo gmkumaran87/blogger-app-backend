@@ -16,7 +16,7 @@ const sendGridMail = async(email, link, customMessage) => {
 
         const info = await sgMail.send(msg);
 
-        console.log("Email sent", info);
+        // console.log("Email sent", info);
         return info;
     } catch (error) {
         console.log(error);

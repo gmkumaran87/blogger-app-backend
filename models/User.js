@@ -24,6 +24,15 @@ const UserSchema = new mongoose.Schema({
         minlength: 6,
         maxlength: 12,
     },
+    confirmationCode: {
+        type: String,
+        required: [true, "Please attach confirmation code"],
+    },
+    isActive: {
+        type: Boolean,
+        enum: [true, false],
+        default: false,
+    },
 }, { timestamps: true });
 
 UserSchema.pre("save", async function() {
@@ -31,7 +40,8 @@ UserSchema.pre("save", async function() {
     this.password = await bcrypt.hash(this.password, salt);
 });
 
-UserSchema.methods.comparePassword = async(enteredPassword) => {
+UserSchema.methods.comparePassword = async function(enteredPassword) {
+    console.log("Password in User", enteredPassword, this.password);
     const isMatch = await bcrypt.compare(enteredPassword, this.password);
     return isMatch;
 };
