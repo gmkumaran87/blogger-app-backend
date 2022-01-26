@@ -24,7 +24,7 @@ const UserSchema = new mongoose.Schema({
         minlength: 6,
         maxlength: 12,
     },
-    confirmationCode: {
+    activationCode: {
         type: String,
         required: [true, "Please attach confirmation code"],
     },

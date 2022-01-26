@@ -34,7 +34,7 @@ const registerUser = async(req, res) => {
         randomId: Math.floor(Math.random() * 100) + 1,
     });
 
-    req.body.confirmationCode = confirmationToken;
+    req.body.activationCode = confirmationToken;
     req.body.isActive = false;
 
     const user = await User.create(req.body);
@@ -58,9 +58,32 @@ const registerUser = async(req, res) => {
         "activating your account"
     );
 
-    res
-        .status(StatusCodes.CREATED)
-        .json({ msg: "Registered the User, Please login", user });
+    res.status(StatusCodes.CREATED).json({
+        msg: "User registered and activation link sent, please activate",
+        user,
+    });
+};
+
+const accountActivation = async(req, res) => {
+    const { activationCode } = req.params;
+
+    const userExists = await User.findOne({ activationCode });
+
+    if (userExists) {
+        const updatedUser = await User.findByIdAndUpdate({ _id: userExists._id }, { isActive: true }, { new: true, runValidators: true });
+        /* await db
+            .collection("users")
+            .updateOne({ _id: userExists._id }, { $set: { isActive: true } });
+*/
+        res.status(StatusCodes.OK).json({
+            msg: "Account activation link validation is successfull",
+            updatedUser,
+        });
+    } else {
+        res
+            .status(StatusCodes.BAD_REQUEST)
+            .json({ msg: "Activation link is not valid" });
+    }
 };
 
 const loginUser = async(req, res) => {
@@ -100,7 +123,7 @@ const loginUser = async(req, res) => {
     console.log("Before status");
     res.status(StatusCodes.CREATED).json({
         msg: "User Logged in successfully...",
-        user,
+        user: user._doc,
     });
 };
 
@@ -183,29 +206,6 @@ const updatePassword = async(req, res) => {
             .json({ msg: "Password updated successfully", updatedUser });
     } else {
         throw new UnauthenticatedError("Invalid Credentials");
-    }
-};
-const accountActivation = async(req, res) => {
-    const { confirmationCode } = req.params;
-
-    const db = await connectDB();
-    const userExists = await db.collection("users").findOne({
-        confirmationCode: confirmationCode,
-    });
-
-    if (userExists) {
-        await db
-            .collection("users")
-            .updateOne({ _id: userExists._id }, { $set: { isActive: true } });
-
-        res.status(StatusCodes.OK).json({
-            msg: "Account activation link validation is successfull",
-            userExists,
-        });
-    } else {
-        res
-            .status(StatusCodes.BAD_REQUEST)
-            .json({ msg: "Activation link is not valid" });
     }
 };
 
