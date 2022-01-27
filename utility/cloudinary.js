@@ -10,7 +10,7 @@ cloudinary.config({
 const imageUpload = async(image) => {
     try {
         const result = await cloudinary.uploader.upload(image);
-        console.log(result);
+        // console.log(result);
         return result;
     } catch (error) {
         console.log(error);
