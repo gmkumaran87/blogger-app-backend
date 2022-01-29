@@ -20,7 +20,7 @@ from "../utility/helper.js";*/
 // import { compareSync } from "bcryptjs";
 
 const registerUser = async(req, res) => {
-    const { username, email, password } = req.body;
+    const { email } = req.body;
 
     const emailExists = await User.findOne({ email });
 
@@ -41,7 +41,7 @@ const registerUser = async(req, res) => {
     console.log(user);
 
     const jsonUserDetails = {
-        username: user.username,
+        username: user.firstName,
         email: user.email,
         userId: user._id,
     };

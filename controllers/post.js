@@ -6,30 +6,38 @@ const {
 } = require("../errors/index");
 const { StatusCodes } = require("http-status-codes");
 const Post = require("../models/Post");
+const Category = require("../models/Category");
 const imageUpload = require("../utility/cloudinary");
 const path = require("path");
-const { create } = require("../models/Post");
 
 const createPost = async(req, res) => {
     console.log(req.user);
 
+    const { categories } = req.body;
+
     req.body.createdBy = req.user.userId;
 
     const post = await Post.create(req.body);
+
+    const category = await Category.findOne({ name: categories });
+
+    if (!category) {
+        const entry = await Category.create({ name: categories });
+    }
     res
         .status(StatusCodes.CREATED)
         .json({ msg: "Post created successfully", post });
 };
 
 const getAllPosts = async(req, res) => {
-    const { author, cat } = req.query;
+    const { author, categories } = req.query;
     const queryObject = {};
 
     if (author) {
         queryObject.createdBy = author;
     }
-    if (cat) {
-        queryObject.category = { $in: [cat] };
+    if (categories) {
+        queryObject.categories = { $in: [categories] };
     }
     console.log("Query obj", queryObject);
     const posts = await Post.find(queryObject);
@@ -48,7 +56,7 @@ const getPost = async(req, res) => {
     if (!post) {
         throw new NotFoundError("Post not found");
     }
-    res.status(StatusCodes.OK).json({ msg: "Single Post", post });
+    res.status(StatusCodes.OK).json(post);
 };
 
 const updatePost = async(req, res) => {

@@ -17,6 +17,7 @@ const app = express();
 // Routers
 const authrouter = require("./routers/auth");
 const postRouter = require("./routers/post");
+const catRouter = require("./routers/category");
 
 // error handler
 const notFoundMiddleware = require("./middleware/not-found");
@@ -31,6 +32,7 @@ app.use(cookieParser(process.env.JWT_SECRET));
 
 app.use("/api/v1/auth", authrouter);
 app.use("/api/v1/posts", postRouter);
+app.use("/api/v1/category", catRouter);
 
 app.get("/", (req, res) => {
     console.log(req.signedCookies);
