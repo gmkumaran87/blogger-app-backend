@@ -41,7 +41,7 @@ const registerUser = async(req, res) => {
     console.log(user);
 
     const jsonUserDetails = {
-        username: user.firstName,
+        firstName: user.firstName,
         email: user.email,
         userId: user._id,
     };
@@ -111,7 +111,7 @@ const loginUser = async(req, res) => {
 
     console.log("After Password Validation");
     const jsonUserDetails = {
-        username: user.username,
+        firstName: user.firstName,
         email: user.email,
         userId: user._id,
     };

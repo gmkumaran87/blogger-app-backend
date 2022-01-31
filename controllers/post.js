@@ -11,11 +11,12 @@ const imageUpload = require("../utility/cloudinary");
 const path = require("path");
 
 const createPost = async(req, res) => {
-    console.log(req.user);
+    console.log(req.user, req.body);
 
     const { categories } = req.body;
 
     req.body.createdBy = req.user.userId;
+    req.body.author = req.user.firstName;
 
     const post = await Post.create(req.body);
 
@@ -86,6 +87,7 @@ const deletePost = async(req, res) => {
 };
 
 const uploadImage = async(req, res) => {
+    console.log("Inside upload", req.file);
     const fileName = req.file.destination + "/" + req.file.filename;
 
     try {

@@ -1,6 +1,10 @@
 const mongoose = require("mongoose");
 
 const PostSchema = new mongoose.Schema({
+    author: {
+        type: String,
+        required: [true, "Users first name"],
+    },
     title: {
         type: String,
         required: [true, "Please enter the title"],

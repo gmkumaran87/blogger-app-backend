@@ -13,8 +13,12 @@ const authentication = async(req, res, next) => {
     try {
         const tokenValid = isTokenValid(token);
 
-        // console.log("Token processed", tokenValid);
-        req.user = { userId: tokenValid.userId, email: tokenValid.email };
+        console.log("Token processed", tokenValid);
+        req.user = {
+            userId: tokenValid.userId,
+            email: tokenValid.email,
+            firstName: tokenValid.firstName,
+        };
         next();
     } catch (error) {
         throw new UnauthenticatedError("Invalid Authentication");
