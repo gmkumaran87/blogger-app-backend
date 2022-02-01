@@ -118,12 +118,13 @@ const loginUser = async(req, res) => {
 
     console.log("Json User", jsonUserDetails);
 
-    attachCookiesToResponse(res, jsonUserDetails);
+    const token = attachCookiesToResponse(res, jsonUserDetails);
 
     console.log("Before status");
     res.status(StatusCodes.CREATED).json({
         msg: "User Logged in successfully...",
         user: user._doc,
+        token,
     });
 };
 

@@ -24,6 +24,7 @@ const attachCookiesToResponse = (res, payload) => {
         signed: true,
     });
 
+    return token;
     // res.status(200).json({ user: payload.jsonUserDetails, token });
 };
 module.exports = {
