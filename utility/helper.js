@@ -16,15 +16,17 @@ const attachCookiesToResponse = (res, payload) => {
 
     const oneDay = 1000 * 60 * 60 * 24; // One day in milli seconds
 
+    console.log("Token", token);
     // Sending the Cookies
     res.cookie("token", token, {
         expires: new Date(Date.now() + oneDay),
         httpOnly: true,
-        secure: true,
+        // secure: true,
         signed: true,
     });
 
     return token;
+
     // res.status(200).json({ user: payload.jsonUserDetails, token });
 };
 module.exports = {

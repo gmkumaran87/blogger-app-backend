@@ -28,7 +28,7 @@ const upload = multer({
 router.route("/").get(getAllPosts).post(authentication, createPost);
 router
     .route("/:id")
-    .get(getPost)
+    .get(authentication, getPost)
     .patch(authentication, updatePost)
     .delete(authentication, deletePost);
 

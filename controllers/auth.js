@@ -9,16 +9,6 @@ const { StatusCodes } = require("http-status-codes");
 const sendGridMail = require("../utility/sendMail");
 const { attachCookiesToResponse, jsonToken } = require("../utility/helper");
 
-/*const {
-    connectDB,
-    hashPassword,
-    randomStringGenerator,
-    jsonToken,
-    comparePassword,
-} =
-from "../utility/helper.js";*/
-// import { compareSync } from "bcryptjs";
-
 const registerUser = async(req, res) => {
     const { email } = req.body;
 
@@ -38,7 +28,7 @@ const registerUser = async(req, res) => {
     req.body.isActive = false;
 
     const user = await User.create(req.body);
-    console.log(user);
+    // console.log(user);
 
     const jsonUserDetails = {
         firstName: user.firstName,
@@ -100,30 +90,29 @@ const loginUser = async(req, res) => {
         throw new UnauthenticatedError("Invalid Credentials");
     }
 
-    console.log("Email and Password", user, email, password);
+    // console.log("Email and Password", user, email, password);
 
     const isPasswordCorrect = await user.comparePassword(password);
 
-    console.log("After Password", isPasswordCorrect);
     if (!isPasswordCorrect) {
         throw new UnauthenticatedError("Invalid Credentials");
     }
 
-    console.log("After Password Validation");
+    // console.log("After Password Validation");
     const jsonUserDetails = {
         firstName: user.firstName,
         email: user.email,
         userId: user._id,
     };
 
-    console.log("Json User", jsonUserDetails);
+    // console.log("Json User", jsonUserDetails);
 
     const token = attachCookiesToResponse(res, jsonUserDetails);
 
-    console.log("Before status");
+    // console.log("User details", user._doc);
     res.status(StatusCodes.CREATED).json({
         msg: "User Logged in successfully...",
-        user: user._doc,
+        user,
         token,
     });
 };
